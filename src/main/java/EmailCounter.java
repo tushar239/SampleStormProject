@@ -26,7 +26,7 @@ public class EmailCounter extends BaseBasicBolt {
 
     @Override
     public void execute(Tuple input, BasicOutputCollector collector) {
-        System.out.println("Inside EmailCounter...");
+        //System.out.println("Inside EmailCounter...");
         String email = input.getStringByField("email");
         Optional.ofNullable(email)
                 .ifPresent(emailId -> {
