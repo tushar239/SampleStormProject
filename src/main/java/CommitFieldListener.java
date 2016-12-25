@@ -5,12 +5,14 @@ import org.apache.storm.topology.base.BaseRichSpout;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Values;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Tushar Chokshi @ 12/21/16.
@@ -30,12 +32,40 @@ public class CommitFieldListener extends BaseRichSpout {
         System.out.println("Initializing Spout.....");
         this.outputCollector = collector;
 
+/*
 
+        String current = null;
+        try {
+            current = new File( "." ).getCanonicalPath();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Current dir:"+current);
+*/
+
+        InputStream systemResourceAsStream = ClassLoader.getSystemResourceAsStream("changelog.txt");
+        InputStreamReader inputStreamReader = new InputStreamReader(systemResourceAsStream);
+        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+        List<String> lines = new LinkedList<>();
+        String thisLine;
+        try {
+            while ((thisLine = bufferedReader.readLine()) != null) {
+                lines.add(thisLine);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        commits = lines.stream().collect(Collectors.toList());
+/*
         try (Stream<String> stream = Files.lines(Paths.get(ClassLoader.getSystemResource("changelog.txt").toURI()))) {
             commits = stream.collect(Collectors.toList());
         } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+            try(Stream<String> stream = Files.lines(Paths.get("/Users/chokst/MavenizedProjectEclipseWSNew/SampleStormProject/src/main/resources/changelog.txt"))) {
+                commits = stream.collect(Collectors.toList());
+            } catch(Exception e1){
+                throw new RuntimeException(e1);
+            }
+        }*/
     }
 
     @Override

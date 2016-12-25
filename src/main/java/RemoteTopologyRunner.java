@@ -1,32 +1,22 @@
 import org.apache.storm.Config;
-import org.apache.storm.LocalCluster;
+import org.apache.storm.StormSubmitter;
 import org.apache.storm.generated.AlreadyAliveException;
 import org.apache.storm.generated.AuthorizationException;
 import org.apache.storm.generated.InvalidTopologyException;
 import org.apache.storm.generated.StormTopology;
-import org.apache.storm.utils.Utils;
 
 /**
- * @author Tushar Chokshi @ 12/21/16.
+ * @author Tushar Chokshi @ 12/24/16.
  */
-public class LocalTopologyRunner {
-    private static final int TEN_MINUTES = 600000;
-
+public class RemoteTopologyRunner {
     public static void main(String[] args) throws InvalidTopologyException, AuthorizationException, AlreadyAliveException {
-
         Config config = new Config();
         //config.setDebug(true);
 
         StormTopology topology = GithubTopologyBuilder.build(config);
 
+        //System.setProperty("storm.jar", "/Users/chokst/apache-storm-1.0.2/lib/storm-core-1.0.2.jar");
+        StormSubmitter.submitTopology("github-commit-spout-topology", config, topology);
 
-        LocalCluster cluster = new LocalCluster();
-        cluster.submitTopology("github-commit-spout-topology", config, topology);
-
-        Utils.sleep(TEN_MINUTES);
-
-        cluster.killTopology("github-commit-spout-topology");
-        cluster.shutdown();
-        
     }
 }
