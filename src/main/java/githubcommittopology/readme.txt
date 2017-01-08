@@ -2,7 +2,7 @@
 
 run LocalTopologyRunner.
 
-2. How to submit a topology to a Remote cluster?
+2. How to submit a topology to a REMOTE cluster?
 
 - Creating a storm cluster in your local
 https://www.tutorialspoint.com/apache_storm/apache_storm_installation.htm

@@ -1,4 +1,4 @@
-package githubcommittopology;
+package stormkafkaintegration;
 
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
@@ -13,18 +13,18 @@ Running Storm Topology on Local Cluster using localCluster.submitTopology
 
 Storm UI: localhost:8080/index.html
  */
-public class LocalTopologyRunner {
+public class StormKafkaTopologyRunner {
     private static final int TEN_MINUTES = 600000;
-    private static final String TOPOLOGY_NAME = "github-commit-spout-topology";
+    private static final String TOPOLOGY_NAME = "storm-kafka-integration-github-commit-spout-topology";
 
     public static void main(String[] args) throws InvalidTopologyException, AuthorizationException, AlreadyAliveException {
 
         Config config = new Config();
         //config.setDebug(true);
 
-        StormTopology topology = GithubTopologyBuilder.build(config);
+        StormTopology topology = StormKafkaIntegrationTopologyBuilder.build(config);
 
-
+        // Running topology in local cluster
         LocalCluster cluster = new LocalCluster();
         cluster.submitTopology(TOPOLOGY_NAME, config, topology);
 
