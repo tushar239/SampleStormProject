@@ -33,5 +33,9 @@ public class StormKafkaTopologyRunner {
         cluster.killTopology(TOPOLOGY_NAME);
         cluster.shutdown();
 
+        // Running topology on remote cluster
+        //System.setProperty("storm.jar", "/Users/chokst/apache-storm-1.0.2/lib/storm-core-1.0.2.jar");
+        //StormSubmitter.submitTopology(TOPOLOGY_NAME, config, topology);
+
     }
 }

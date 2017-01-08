@@ -12,8 +12,6 @@ import org.apache.storm.spout.SchemeAsMultiScheme;
 import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Fields;
 
-import java.util.UUID;
-
 import static stormkafkaintegration.SimpleKafkaProducer.TOPIC;
 
 /*
@@ -24,6 +22,7 @@ public class StormKafkaIntegrationTopologyBuilder {
     public static StormTopology build(Config config) {
 
         TopologyBuilder topologyBuilder = new TopologyBuilder();
+
 
         // KafkaSpout is provided by storm-kafka dependency. You don't need to create your own spout.
         topologyBuilder
@@ -50,11 +49,14 @@ public class StormKafkaIntegrationTopologyBuilder {
         BrokerHosts brokerHosts = new ZkHosts("localhost:2181");
 
         String topic = TOPIC;
+        String zkRoot = "/"+topic; // The Zkroot will be used as root to store your consumer's offset.
+        String spoutId="storm-kafka-integration-spout"; // May be it will be kafka consumer group id also
 
-        SpoutConfig kafkaSpoutConfig = new SpoutConfig(brokerHosts, topic, "/" + topic, UUID.randomUUID().toString());
+        SpoutConfig kafkaSpoutConfig = new SpoutConfig(brokerHosts, topic, zkRoot, spoutId);
         kafkaSpoutConfig.bufferSizeBytes = 1024 * 1024 * 4;
         kafkaSpoutConfig.fetchSizeBytes = 1024 * 1024 * 4;
         //kafkaSpoutConfig.forceFromStart = true;
+
 
         // Kafka has data in bytes format. You need to use deserializer to convert that bytes to appropriate form. StringScheme is that deserializer that converts bytes to String.
         kafkaSpoutConfig.scheme = new SchemeAsMultiScheme(new MyStringScheme());
@@ -62,4 +64,6 @@ public class StormKafkaIntegrationTopologyBuilder {
 
         return new KafkaSpout(kafkaSpoutConfig);
     }
+
+
 }
