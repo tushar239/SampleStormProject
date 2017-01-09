@@ -1,28 +1,23 @@
-package stormkafkaintegration;
+package stormrabbitmqintegration;
 
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
-import org.apache.storm.generated.AlreadyAliveException;
-import org.apache.storm.generated.AuthorizationException;
-import org.apache.storm.generated.InvalidTopologyException;
 import org.apache.storm.generated.StormTopology;
 import org.apache.storm.utils.Utils;
 
-/*
-Running Storm Topology on Local Cluster using localCluster.submitTopology
-
-Storm UI: localhost:8080/index.html
+/**
+ * @author Tushar Chokshi @ 1/9/17.
  */
-public class StormKafkaTopologyRunner {
+public class StormRabbitMQTopologyRunner {
     private static final int TEN_MINUTES = 600000;
-    private static final String TOPOLOGY_NAME = "storm-kafka-integration-github-commit-spout-topology";
+    private static final String TOPOLOGY_NAME = "storm-rabbitmq-integration-github-commit-spout-topology";
 
-    public static void main(String[] args) throws InvalidTopologyException, AuthorizationException, AlreadyAliveException {
+    public static void main(String[] args) {
 
         Config config = new Config();
         //config.setDebug(true);
 
-        StormTopology topology = StormKafkaIntegrationTopologyBuilder.build(config);
+        StormTopology topology = StormRabbitMQIntegrationTopologyBuilder.build(config);
 
         // Running topology in local cluster
         LocalCluster cluster = new LocalCluster();
@@ -37,6 +32,8 @@ public class StormKafkaTopologyRunner {
         // You will see a topology in Storm UI, only if you run it on Remote Cluster
         //System.setProperty("storm.jar", "/Users/chokst/apache-storm-1.0.2/lib/storm-core-1.0.2.jar");
         //StormSubmitter.submitTopology(TOPOLOGY_NAME, config, topology);
-
     }
+
+
+
 }
