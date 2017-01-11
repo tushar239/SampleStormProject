@@ -5,8 +5,14 @@ import org.apache.storm.generated.StormTopology;
 import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Fields;
 
-/**
- * @author Tushar Chokshi @ 12/24/16.
+/*
+Github commits topology
+-----------------------
+
+Spout - CommitFieldListener - reads changelog.txt file and emits the lines of it (in the form of tuples) to next component(email-extractor)
+Bolt - EmailExtractor - accepts tuples from spout and extracts email id from each tuple and emits those emaild id in the form of new tuples to next component (EmailCounter)
+Bolt - EmailCounter - accepts tuples from EmailExtractor bolt and keeps a count of same email ids in memory
+
  */
 public class GithubTopologyBuilder {
 
