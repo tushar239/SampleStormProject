@@ -6,6 +6,9 @@ import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Fields;
 
 /*
+
+Spout and Bolts are main components of Storm Topology.
+
 Github commits topology
 -----------------------
 

@@ -16,18 +16,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * @author Tushar Chokshi @ 12/21/16.
- */
+/*
+
+Spout can extend either BaseRichSpout or extend its interface IRichSpout.
+BaseRichSpout provides default functionality of acknowledgement.
+If you use IRichSpout, you need to ack manually.
+*/
 public class CommitFieldListener extends BaseRichSpout {
     private SpoutOutputCollector outputCollector;
     private List<String> commits;
 
+    /*
+    It indicates that this spout will emit a tuple with field(s) with name 'commit'
+    It can declare multiple output fields in a tuple.
+    Tuple is just an ordered list of values. You can provide names to those values.
+        Tuple=[{name1=value1}, {name2=value2}, {name3=value3}]
+    Names are not really passed inside tuple, only values are passed.
+    */
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
         declarer.declare(new Fields("commit"));
     }
 
+    /*
+    It's like an init() method of a Servlet. It gts called when Storm prepares the spout to be run.
+     */
     @Override
     public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
 
@@ -70,6 +83,9 @@ public class CommitFieldListener extends BaseRichSpout {
         }*/
     }
 
+    /*
+    This method is called by Storm when it's ready to read the next tuple for the spout.
+     */
     @Override
     public void nextTuple() {
         //System.out.println("emitting next commit...");
@@ -78,6 +94,8 @@ public class CommitFieldListener extends BaseRichSpout {
 
         for (String commit : commits) {
             //System.out.println(commit);
+
+            // emits a tuple for each commit message
             outputCollector.emit(new Values(commit));
         }
 
