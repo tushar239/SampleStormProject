@@ -19,18 +19,24 @@ Bolt - EmailCounter - accepts tuples from EmailExtractor bolt and keeps a count 
  */
 public class GithubTopologyBuilder {
 
+    // Config class is used for defining topology-level configuration
     public static StormTopology build(Config config) {
 
+        // This class is used to piece together spouts an bolts, defining the streams and stream groupings between them.
         TopologyBuilder topologyBuilder = new TopologyBuilder();
         topologyBuilder
                 .setSpout("commit-feed-listener", new CommitFieldListener());
 
         topologyBuilder
                 .setBolt("email-extractor", new EmailExtractor())
+                // adding shuffle grouping between a spout and this bolt
                 .shuffleGrouping("commit-feed-listener");
 
         topologyBuilder
                 .setBolt("email-counter", new EmailCounter())
+                // adding field grouping between a spout and this bolt
+                // Why field grouping?
+                // you want same email id go to the same instance of email-counter bolt
                 .fieldsGrouping("email-extractor", new Fields("email"));
 
 
