@@ -34,6 +34,9 @@ public class GithubTopologyBuilder {
 
         topologyBuilder
                 .setBolt("email-counter", new EmailCounter())
+                // you can add component level configuration like this or inside the class. See EmailCounter bolt class. It has 'getComponentConfiguration' method.
+                //.addConfiguration(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, 60)
+
                 // adding field grouping between a spout and this bolt
                 // Why field grouping?
                 // you want same email id go to the same instance of email-counter bolt
