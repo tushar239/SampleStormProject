@@ -25,15 +25,23 @@ public class GithubTopologyBuilder {
         // This class is used to piece together spouts an bolts, defining the streams and stream groupings between them.
         TopologyBuilder topologyBuilder = new TopologyBuilder();
         topologyBuilder
-                .setSpout("commit-feed-listener", new CommitFieldListener());
+                .setSpout("commit-feed-listener", new CommitFieldListener(), 1) // setting number of executors(threads) to 3. Executor is just a thread that supplies tuple to the tasks. This can be increased dynamically till number of tasks (Chapter 6 of Storm_Applied book). So, it's better to keep number of tasks a bit higher, so that you can adjust number of executors dynamically later on, if needed.
+                .setNumTasks(3); // setting number of tasks (instances of spout) to 3
+
 
         topologyBuilder
-                .setBolt("email-extractor", new EmailExtractor())
+                .setBolt("email-extractor", new EmailExtractor(), 3)
                 // adding shuffle grouping between a spout and this bolt
-                .shuffleGrouping("commit-feed-listener");
+                .shuffleGrouping("commit-feed-listener")
+                .setNumTasks(6);
 
         topologyBuilder
-                .setBolt("email-counter", new EmailCounter())
+                // Here, you have defined field grouping.
+                // Shuffle Grouping is the best and Global Grouping is the worst.
+                // In Global Grouping, increasing number of executors and tasks are not going to give any benefit because all the tuples will be sent to the same task.
+                // Field Grouping has a problem too. You cannot change the number of executors/tasks later on. If you do that hashing will be changed and tuple with specific hashcode that used to go to task-x might start going to task-y.
+                .setBolt("email-counter", new EmailCounter(), 3)
+                .setNumTasks(3)
                 // you can add component level configuration like this or inside the class. See EmailCounter bolt class. It has 'getComponentConfiguration' method.
                 //.addConfiguration(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, 60)
 
