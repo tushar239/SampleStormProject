@@ -27,6 +27,7 @@ public class GithubTopologyBuilder {
         topologyBuilder
                 .setSpout("commit-feed-listener", new CommitFieldListener(), 1) // setting number of executors(threads) to 3. Executor is just a thread that supplies tuple to the tasks. This can be increased dynamically till number of tasks (Chapter 6 of Storm_Applied book). So, it's better to keep number of tasks a bit higher, so that you can adjust number of executors dynamically later on, if needed.
                 //.addConfiguration(Config.TOPOLOGY_MESSAGE_TIMEOUT_SECS, 60) // If a tuple is acked within 60 seconds, then mark it a failed. Default value is 30 seconds.
+                //.setMaxSpoutPending(250) // this number allows you to set max number of tuples that can be unacked(success/failure) at any given time. Even though it is optional, it is recommended to always set it. It's value should be kept higher than number of total tasks of all bolts. Chapter 6 of Storm_Applied book explains it very well.
                 .setNumTasks(3); // setting number of tasks (instances of spout) to 3
 
 
