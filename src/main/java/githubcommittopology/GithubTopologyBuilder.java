@@ -26,6 +26,7 @@ public class GithubTopologyBuilder {
         TopologyBuilder topologyBuilder = new TopologyBuilder();
         topologyBuilder
                 .setSpout("commit-feed-listener", new CommitFieldListener(), 1) // setting number of executors(threads) to 3. Executor is just a thread that supplies tuple to the tasks. This can be increased dynamically till number of tasks (Chapter 6 of Storm_Applied book). So, it's better to keep number of tasks a bit higher, so that you can adjust number of executors dynamically later on, if needed.
+                //.addConfiguration(Config.TOPOLOGY_MESSAGE_TIMEOUT_SECS, 60) // If a tuple is acked within 60 seconds, then mark it a failed. Default value is 30 seconds.
                 .setNumTasks(3); // setting number of tasks (instances of spout) to 3
 
 
