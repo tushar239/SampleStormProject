@@ -20,7 +20,9 @@ import java.util.stream.Collectors;
 
 Spout can extend either BaseRichSpout or extend its interface IRichSpout.
 BaseRichSpout provides default functionality of acknowledgement.
-If you use IRichSpout, you need to ack manually.
+If you use IRichSpout,
+you need to override ack(), fail() etc methods and you explicitly need to somehow retry/reject a message like RabbitMQSpout.
+If a tuple is anchored properly in bolt(s), failure of a tuple in bolt will be messaged back to a spout and it will call fail() method of a spout.
 */
 public class CommitFieldListener extends BaseRichSpout {
     private SpoutOutputCollector outputCollector;
