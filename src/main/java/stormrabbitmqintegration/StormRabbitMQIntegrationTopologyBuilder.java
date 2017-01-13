@@ -25,7 +25,7 @@ public class StormRabbitMQIntegrationTopologyBuilder {
                         .connection(connectionConfig)
                         .queue("storm.rabbitmq.int.queue")
                         .prefetch(200)
-                        //.requeueOnFail()
+                        .requeueOnFail()
                         .build();
 
         TopologyBuilder topologyBuilder = new TopologyBuilder();
@@ -52,6 +52,9 @@ public class StormRabbitMQIntegrationTopologyBuilder {
 
     protected static RabbitMQSpout createRabbitMQSpout() {
 
+        // MyStringScheme extends StringScheme.
+        // You are telling RabbitMQSpout to convert byte message polled from queue into String.
+        // RabbitMQSpout calls a consumer class that polls a message from a queue.
         return new RabbitMQSpout(new MyStringScheme());
     }
 
