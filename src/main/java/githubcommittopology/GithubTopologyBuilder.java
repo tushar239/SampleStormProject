@@ -2,6 +2,7 @@ package githubcommittopology;
 
 import org.apache.storm.Config;
 import org.apache.storm.generated.StormTopology;
+import org.apache.storm.metric.LoggingMetricsConsumer;
 import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Fields;
 
@@ -22,8 +23,26 @@ public class GithubTopologyBuilder {
     // Config class is used for defining topology-level configuration
     public static StormTopology build(Config config) {
 
+        // Metrics are used in EmailCounter bolt. Consumer of those metrics are registered here.
+        // There are 3rd party tools like Statsd, Riemann available as Metrics Consumer.
+        // Here, we have used Storm's in-built LoggingMetricsConsumer that will log the metrics in stdout in LocalCluster. In RemoteCluster, it will write to metric.log under Storm's log directory.
+        // You can also set this config in storm.yaml
+        // topology.metrics.consumer.register: "org.apache.storm.metrics.LoggingMetricsConsumer"
+
+        // 217324 [Thread-16-__metricsorg.apache.storm.metric.LoggingMetricsConsumer-executor[2 2]] INFO  o.a.s.m.LoggingMetricsConsumer - 1484336694	sea-chokst-m4.ds.ad.adp.com:1024	 11:email-extractor	__execute-count        	{commit-feed-listener:default=62780}
+        // 197853 [Thread-16-__metricsorg.apache.storm.metric.LoggingMetricsConsumer-executor[2 2]] INFO  o.a.s.m.LoggingMetricsConsumer - 1484336694	sea-chokst-m4.ds.ad.adp.com:1024	 11:email-extractor	__emit-count           	{default=62800, __metrics=0}
+        // 197855 [Thread-16-__metricsorg.apache.storm.metric.LoggingMetricsConsumer-executor[2 2]] INFO  o.a.s.m.LoggingMetricsConsumer - 1484336694	sea-chokst-m4.ds.ad.adp.com:1024	 11:email-extractor	__process-latency      	{commit-feed-listener:default=1.3544585987261146}
+        // 197857 [Thread-16-__metricsorg.apache.storm.metric.LoggingMetricsConsumer-executor[2 2]] INFO  o.a.s.m.LoggingMetricsConsumer - 1484336694	sea-chokst-m4.ds.ad.adp.com:1024	 11:email-extractor	__receive              	{arrival_rate_secs=4.856333468231485, overflow=1, read_pos=145863, write_pos=145867, sojourn_time_ms=823.6666666666667, capacity=1024, population=4}
+        // 197857 [Thread-16-__metricsorg.apache.storm.metric.LoggingMetricsConsumer-executor[2 2]] INFO  o.a.s.m.LoggingMetricsConsumer - 1484336694	sea-chokst-m4.ds.ad.adp.com:1024	 11:email-extractor	__ack-count            	{commit-feed-listener:default=62800}
+        // 197857 [Thread-16-__metricsorg.apache.storm.metric.LoggingMetricsConsumer-executor[2 2]] INFO  o.a.s.m.LoggingMetricsConsumer - 1484336694	sea-chokst-m4.ds.ad.adp.com:1024	 11:email-extractor	__transfer-count       	{default=62800, __metrics=0}
+        // 197857 [Thread-16-__metricsorg.apache.storm.metric.LoggingMetricsConsumer-executor[2 2]] INFO  o.a.s.m.LoggingMetricsConsumer - 1484336694	sea-chokst-m4.ds.ad.adp.com:1024	 11:email-extractor	__execute-latency      	{commit-feed-listener:default=0.0022300095571838167}
+        // 197857 [Thread-16-__metricsorg.apache.storm.metric.LoggingMetricsConsumer-executor[2 2]] INFO  o.a.s.m.LoggingMetricsConsumer - 1484336694	sea-chokst-m4.ds.ad.adp.com:1024	 11:email-extractor	__fail-count           	{}
+
+        config.registerMetricsConsumer(LoggingMetricsConsumer.class);
+
         // This class is used to piece together spouts an bolts, defining the streams and stream groupings between them.
         TopologyBuilder topologyBuilder = new TopologyBuilder();
+
         topologyBuilder
                 .setSpout("commit-feed-listener", new CommitFieldListener(), 1) // setting number of executors(threads) to 3. Executor is just a thread that supplies tuple to the tasks. This can be increased dynamically till number of tasks (Chapter 6 of Storm_Applied book). So, it's better to keep number of tasks a bit higher, so that you can adjust number of executors dynamically later on, if needed.
                 //.addConfiguration(Config.TOPOLOGY_MESSAGE_TIMEOUT_SECS, 60) // If a tuple is acked within 60 seconds, then mark it a failed. Default value is 30 seconds.

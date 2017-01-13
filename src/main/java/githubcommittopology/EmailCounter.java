@@ -2,9 +2,11 @@ package githubcommittopology;
 
 import org.apache.storm.Config;
 import org.apache.storm.Constants;
+import org.apache.storm.metric.api.CountMetric;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.BasicOutputCollector;
 import org.apache.storm.topology.OutputFieldsDeclarer;
+import org.apache.storm.topology.ReportedFailedException;
 import org.apache.storm.topology.base.BaseBasicBolt;
 import org.apache.storm.tuple.Tuple;
 
@@ -16,7 +18,12 @@ import java.util.Optional;
  * @author Tushar Chokshi @ 12/21/16.
  */
 public class EmailCounter extends BaseBasicBolt {
+    private static final int METRICS_WINDOW = 60;
+
     private Map<String, Integer> counts;
+
+    private transient CountMetric successCountMetric;
+    private transient CountMetric failedCountMetric;
 
     /*
     You can set each component level configuration by overriding this method.
@@ -31,7 +38,7 @@ public class EmailCounter extends BaseBasicBolt {
     @Override
     public Map<String, Object> getComponentConfiguration() {
         Config config = new Config();
-        config.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, 60);
+        config.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, 5);
         return config;
     }
 
@@ -39,6 +46,14 @@ public class EmailCounter extends BaseBasicBolt {
     @Override
     public void prepare(Map stormConf, TopologyContext context) {
         counts = new HashMap<>();
+
+        // These are the Metrics creators. Metrics Consumer needs to be registered at topology level.
+        // register the Storm's Built-In CountMetric to keep total count of input tuples being processed successfully
+        successCountMetric = new CountMetric();
+        context.registerMetric("successful-input-tuple-processing-metric", successCountMetric, METRICS_WINDOW);
+
+        failedCountMetric = new CountMetric();
+        context.registerMetric("failed-input-tuple-processing-metric", successCountMetric, METRICS_WINDOW);
     }
 
     @Override
@@ -48,21 +63,29 @@ public class EmailCounter extends BaseBasicBolt {
 
     @Override
     public void execute(Tuple input, BasicOutputCollector collector) {
-        if(isTickTuple(input)) {
+        if (isTickTuple(input)) {
             // take some periodic action like putting in-memory result to database etc.
             return;
         }
 
         //System.out.println("Inside EmailCounter...");
         String email = input.getStringByField("email");
-        Optional.ofNullable(email)
-                .ifPresent(emailId -> {
-                            counts.computeIfAbsent(emailId, newValue -> 1);
-                            counts.computeIfPresent(emailId, (key, oldValue) -> oldValue + 1);
-                            System.out.println("count of :"+ emailId+" : "+counts.get(emailId));
-                        }
-                );
 
+        try {
+            Optional.ofNullable(email)
+                    .ifPresent(emailId -> {
+                                counts.computeIfAbsent(emailId, newValue -> 1);
+                                counts.computeIfPresent(emailId, (key, oldValue) -> oldValue + 1);
+                                System.out.println("count of :" + emailId + " : " + counts.get(emailId));
+
+                                successCountMetric.incr();
+                            }
+                    );
+        } catch (Exception e) {
+            failedCountMetric.incr();
+            // This will mark a tuple as failed.  Read Anchoring, Acking/Failing (See Chapter 4 of Storm_Applied book)
+            throw new ReportedFailedException(e);
+        }
 
     }
 
