@@ -18,7 +18,8 @@ import java.util.Optional;
  * @author Tushar Chokshi @ 12/21/16.
  */
 public class EmailCounter extends BaseBasicBolt {
-    private static final int METRICS_WINDOW = 60;
+
+    private static final int METRICS_WINDOW = 5;
 
     private Map<String, Integer> counts;
 
@@ -38,7 +39,7 @@ public class EmailCounter extends BaseBasicBolt {
     @Override
     public Map<String, Object> getComponentConfiguration() {
         Config config = new Config();
-        config.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, 5);
+        config.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, 60);
         return config;
     }
 
@@ -50,7 +51,7 @@ public class EmailCounter extends BaseBasicBolt {
         // These are the Metrics creators. Metrics Consumer needs to be registered at topology level.
         // register the Storm's Built-In CountMetric to keep total count of input tuples being processed successfully
         successCountMetric = new CountMetric();
-        context.registerMetric("successful-input-tuple-processing-metric", successCountMetric, METRICS_WINDOW);
+        context.registerMetric("successful-input-tuple-processing-metric", successCountMetric, METRICS_WINDOW); // Every 5 seconds metric will be reported to Consumer and metric value will be reset.
 
         failedCountMetric = new CountMetric();
         context.registerMetric("failed-input-tuple-processing-metric", successCountMetric, METRICS_WINDOW);
