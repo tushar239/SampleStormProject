@@ -35,11 +35,23 @@ public class EmailExtractor extends BaseBasicBolt {
                 String commit = input.getStringByField("commit");
                 String[] split = commit.split(" ");
                 // emits a new tuple containing the field 'email'
+                // As we are using BaseBasicBolt, it provides BasicOutputCollector that implicitly anchors input tuple.
                 collector.emit(new Values(split[1]));
-/*
-                Optional.ofNullable(commit)
-                        .map(com -> com.split(" ")[1])
-                        .ifPresent(emailId -> collector.emit(new Values(emailId)));*/
+
+                // Anchoring, Acking/Failing (See Chapter 4 of Storm_Applied book)
+                // If you are using BasicRichBolt, then you need to anchor an input tuple with emitted one using
+                //collector.emit(input, new Values(split[1]));
+                //collector.ack(input);
+
+                // For some reason, if you want to fail this input tuple processing,
+                // If you are using BaseBasicBolt, then you can do
+
+                //throw new FailedException("error message");
+                // or
+                //throw new ReportedFailedException("error message");
+
+                // if you use BaseRichBolt, then you need to manually ack/fail a tuple processing.
+                //collector.fail(input);
             }
         }
     }
